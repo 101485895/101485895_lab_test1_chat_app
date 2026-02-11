@@ -10,6 +10,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const authRoutes = require("./routes/auth");
+const GroupMessage = require("./models/GroupMessage");
 
 app.use(cors());
 app.use(express.json());
@@ -25,6 +26,36 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB error:", err.message));
+
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  socket.on("joinRoom", ({ room, username }) => {
+    socket.join(room);
+    console.log(`${username} joined ${room}`);
+  });
+
+  socket.on("leaveRoom", (room) => {
+    socket.leave(room);
+    console.log(`left room: ${room}`);
+  });
+
+  socket.on("groupMessage", async (data) => {
+    try {
+      const { room, from_user, message } = data;
+
+      await GroupMessage.create({ room, from_user, message });
+
+      io.to(room).emit("groupMessage", data);
+    } catch (err) {
+      console.error("groupMessage error:", err.message);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
