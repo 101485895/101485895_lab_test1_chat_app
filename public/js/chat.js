@@ -40,11 +40,32 @@ $("#leaveBtn").click(() => {
     $("#currentRoom").text("none");
     $("#typing").text("");
     setChatEnabled(false);
+    socket.emit("stopTyping", { room: currentRoom, username: user.username });
 });
 
 $("#sendBtn").click(sendMessage);
 $("#msgInput").on("keypress", (e) => {
     if (e.key === "Enter") sendMessage();
+});
+
+$("#msgInput").on("input", () => {
+  if (!currentRoom) return;
+
+  socket.emit("typing", { room: currentRoom, username: user.username });
+
+  if (typingTimer) clearTimeout(typingTimer);
+
+  typingTimer = setTimeout(() => {
+    socket.emit("stopTyping", { room: currentRoom, username: user.username });
+  }, 800);
+});
+
+socket.on("typing", ({ username }) => {
+  $("#typing").text(`${username} is typing...`);
+});
+
+socket.on("stopTyping", ({ username }) => {
+  $("#typing").text("");
 });
 
 function sendMessage() {
@@ -56,6 +77,7 @@ function sendMessage() {
         from_user: user.username,
         message: msg
     });
+    socket.emit("stopTyping", { room: currentRoom, username: user.username });
   $("#msgInput").val("");
 }
 

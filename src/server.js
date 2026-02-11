@@ -62,6 +62,14 @@ io.on("connection", (socket) => {
     socket.emit("roomHistory", history);
 
     });
+    socket.on("typing", ({ room, username }) => {
+        socket.to(room).emit("typing", { username });
+    });
+
+    socket.on("stopTyping", ({ room, username }) => {
+        socket.to(room).emit("stopTyping", { username });
+    });
+
     socket.on("disconnect", () => {
         console.log("Socket disconnected:", socket.id);
     });
