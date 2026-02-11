@@ -51,4 +51,41 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "username and password are required"
+      });
+    }
+
+    const user = await User.findOne({ username: username.trim() });
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        username: user.username,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        createdon: user.createdon
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+});
+
 module.exports = router;
