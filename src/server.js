@@ -52,10 +52,19 @@ io.on("connection", (socket) => {
         }
     });
 
+    socket.on("joinRoom", async ({ room, username }) => {
+    socket.join(room);
+
+    const history = await GroupMessage.find({ room })
+        .sort({ date_sent: 1 })
+        .limit(50)
+        .lean();
     socket.emit("roomHistory", history);
+
     });
     socket.on("disconnect", () => {
         console.log("Socket disconnected:", socket.id);
+    });
 });
 
 const PORT = process.env.PORT || 3000;

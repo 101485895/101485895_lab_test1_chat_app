@@ -66,6 +66,14 @@ socket.on("groupMessage", (data) => {
     $("#chatBox").scrollTop($("#chatBox")[0].scrollHeight);
 });
 
+socket.on("roomHistory", (msgs) => {
+    $("#chatBox").html("");
+    msgs.forEach(m => {
+        $("#chatBox").append(`<div><strong>${m.from_user}:</strong> ${escapeHtml(m.message)}</div>`);
+    });
+    $("#chatBox").scrollTop($("#chatBox")[0].scrollHeight);
+});
+
 function escapeHtml(str) {
     return str.replace(/[&<>"']/g, (m) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
