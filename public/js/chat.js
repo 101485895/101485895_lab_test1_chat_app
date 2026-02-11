@@ -35,12 +35,15 @@ $("#joinBtn").click(() => {
 
 $("#leaveBtn").click(() => {
     if (!currentRoom) return;
+    socket.emit("stopTyping", { room: currentRoom, username: user.username });
     socket.emit("leaveRoom", currentRoom);
     currentRoom = null;
     $("#currentRoom").text("none");
+    $("#chatBox").html("");
+    $("#msgInput").val("");
     $("#typing").text("");
     setChatEnabled(false);
-    socket.emit("stopTyping", { room: currentRoom, username: user.username });
+    
 });
 
 $("#sendBtn").click(sendMessage);
