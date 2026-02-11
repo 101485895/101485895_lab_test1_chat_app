@@ -9,6 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+const authRoutes = require("./routes/auth");
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/public", express.static(path.join(__dirname, "..", "public")));
 app.use("/view", express.static(path.join(__dirname, "..", "view")));
+app.use("/api", authRoutes);
 
 app.get("/", (req, res) => res.send("testing testing"));
 
