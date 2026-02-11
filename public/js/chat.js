@@ -9,66 +9,65 @@ let currentRoom = null;
 let typingTimer = null;
 
 function setChatEnabled(enabled) {
-  $("#msgInput").prop("disabled", !enabled);
-  $("#sendBtn").prop("disabled", !enabled);
-  $("#leaveBtn").prop("disabled", !enabled);
+    $("#msgInput").prop("disabled", !enabled);
+    $("#sendBtn").prop("disabled", !enabled);
+    $("#leaveBtn").prop("disabled", !enabled);
 }
 
 $("#logoutBtn").click(() => {
-  localStorage.removeItem("chat_user");
-  window.location.href = "/view/login.html";
+    localStorage.removeItem("chat_user");
+    window.location.href = "/view/login.html";
 });
 
 $("#joinBtn").click(() => {
-  const room = $("#roomSelect").val();
+    const room = $("#roomSelect").val();
 
-  if (currentRoom) socket.emit("leaveRoom", currentRoom);
+    if (currentRoom) socket.emit("leaveRoom", currentRoom);
 
-  currentRoom = room;
-  $("#currentRoom").text(currentRoom);
-  $("#chatBox").html("");
-  $("#typing").text("");
+    currentRoom = room;
+    $("#currentRoom").text(currentRoom);
+    $("#chatBox").html("");
+    $("#typing").text("");
 
-  socket.emit("joinRoom", { room, username: user.username });
-  setChatEnabled(true);
+    socket.emit("joinRoom", { room, username: user.username });
+    setChatEnabled(true);
 });
 
 $("#leaveBtn").click(() => {
-  if (!currentRoom) return;
-  socket.emit("leaveRoom", currentRoom);
-  currentRoom = null;
-  $("#currentRoom").text("none");
-  $("#typing").text("");
-  setChatEnabled(false);
+    if (!currentRoom) return;
+    socket.emit("leaveRoom", currentRoom);
+    currentRoom = null;
+    $("#currentRoom").text("none");
+    $("#typing").text("");
+    setChatEnabled(false);
 });
 
 $("#sendBtn").click(sendMessage);
 $("#msgInput").on("keypress", (e) => {
-  if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter") sendMessage();
 });
 
 function sendMessage() {
-  const msg = $("#msgInput").val().trim();
-  if (!msg || !currentRoom) return;
+    const msg = $("#msgInput").val().trim();
+    if (!msg || !currentRoom) return;
 
-  socket.emit("groupMessage", {
-    room: currentRoom,
-    from_user: user.username,
-    message: msg
-  });
-
+    socket.emit("groupMessage", {
+        room: currentRoom,
+        from_user: user.username,
+        message: msg
+    });
   $("#msgInput").val("");
 }
 
 socket.on("groupMessage", (data) => {
-  $("#chatBox").append(
-    `<div><strong>${data.from_user}:</strong> ${escapeHtml(data.message)}</div>`
-  );
-  $("#chatBox").scrollTop($("#chatBox")[0].scrollHeight);
+    $("#chatBox").append(
+        `<div><strong>${data.from_user}:</strong> ${escapeHtml(data.message)}</div>`
+    );
+    $("#chatBox").scrollTop($("#chatBox")[0].scrollHeight);
 });
 
 function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, (m) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[m]));
+    return str.replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[m]));
 }

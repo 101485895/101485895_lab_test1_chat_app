@@ -23,38 +23,39 @@ app.use("/api", authRoutes);
 app.get("/", (req, res) => res.send("testing testing"));
 
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB error:", err.message));
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => console.error("MongoDB error:", err.message));
 
 io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
+    console.log("Socket connected:", socket.id);
 
-  socket.on("joinRoom", ({ room, username }) => {
-    socket.join(room);
-    console.log(`${username} joined ${room}`);
-  });
+    socket.on("joinRoom", ({ room, username }) => {
+        socket.join(room);
+        console.log(`${username} joined ${room}`);
+    });
 
-  socket.on("leaveRoom", (room) => {
-    socket.leave(room);
-    console.log(`left room: ${room}`);
-  });
+    socket.on("leaveRoom", (room) => {
+        socket.leave(room);
+        console.log(`left room: ${room}`);
+    });
 
-  socket.on("groupMessage", async (data) => {
-    try {
-      const { room, from_user, message } = data;
+    socket.on("groupMessage", async (data) => {
+        try {
+        const { room, from_user, message } = data;
 
-      await GroupMessage.create({ room, from_user, message });
+        await GroupMessage.create({ room, from_user, message });
 
-      io.to(room).emit("groupMessage", data);
-    } catch (err) {
-      console.error("groupMessage error:", err.message);
-    }
-  });
+        io.to(room).emit("groupMessage", data);
+        } catch (err) {
+        console.error("groupMessage error:", err.message);
+        }
+    });
 
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
-  });
+    socket.emit("roomHistory", history);
+    });
+    socket.on("disconnect", () => {
+        console.log("Socket disconnected:", socket.id);
 });
 
 const PORT = process.env.PORT || 3000;
